@@ -76,6 +76,8 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 
+        // 反序列化响应类型
+
         byte flag = in.readByte();
         switch (flag) {
             case DubboCodec.RESPONSE_NULL_VALUE:
@@ -89,10 +91,14 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             case DubboCodec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS:
                 handleAttachment(in);
                 break;
+
+            // 反序列化 attachments 集合，并存储起来
             case DubboCodec.RESPONSE_VALUE_WITH_ATTACHMENTS:
                 handleValue(in);
                 handleAttachment(in);
                 break;
+
+            // 异常对象不为空，且携带了 attachments 集合
             case DubboCodec.RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS:
                 handleException(in);
                 handleAttachment(in);
@@ -110,12 +116,15 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
     public void decode() throws Exception {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
+                // 执行反序列化操作
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {
                     log.warn("Decode rpc result failed: " + e.getMessage(), e);
                 }
+                // 反序列化失败，设置 CLIENT_ERROR 状态到 Response 对象中
                 response.setStatus(Response.CLIENT_ERROR);
+                // 设置异常信息
                 response.setErrorMessage(StringUtils.toString(e));
             } finally {
                 hasDecoded = true;

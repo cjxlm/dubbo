@@ -54,9 +54,13 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         if (CollectionUtils.isEmpty(invokers)) {
             return null;
         }
+
+        // 如果 invokers 列表中仅有一个 Invoker，直接返回即可，无需进行负载均衡
         if (invokers.size() == 1) {
             return invokers.get(0);
         }
+
+        // 调用 doSelect 方法进行负载均衡，该方法为抽象方法，由子类实现
         return doSelect(invokers, url, invocation);
     }
 
@@ -80,14 +84,23 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         } else {
             weight = url.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
             if (weight > 0) {
+
+                // 获取服务提供者启动时间戳
                 long timestamp = invoker.getUrl().getParameter(TIMESTAMP_KEY, 0L);
                 if (timestamp > 0L) {
+
+                    // 计算服务提供者运行时长
                     long uptime = System.currentTimeMillis() - timestamp;
                     if (uptime < 0) {
                         return 1;
                     }
+                    // 获取服务预热时间，默认为10分钟
                     int warmup = invoker.getUrl().getParameter(WARMUP_KEY, DEFAULT_WARMUP);
+
+                    // 如果服务运行时间小于预热时间，则重新计算服务权重，即降权
                     if (uptime > 0 && uptime < warmup) {
+
+                        // 重新计算服务权重
                         weight = calculateWarmupWeight((int)uptime, warmup, weight);
                     }
                 }

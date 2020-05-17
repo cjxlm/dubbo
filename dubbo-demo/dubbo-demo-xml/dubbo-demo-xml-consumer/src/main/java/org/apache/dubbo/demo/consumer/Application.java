@@ -29,6 +29,19 @@ public class Application {
      */
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer.xml");
+
+
+//        SpringBeanTest springBeanTest = (SpringBeanTest) context.getBean("springBeanTest");
+//
+//        System.out.println(springBeanTest.getName());
+//
+//        springBeanTest.sayHello();
+
+        //DemoService springBeanTest = (DemoService) context.getBean("springBeanTest");
+//        springBeanTest.sayHello("aop test");
+//        springBeanTest.start();
+
+
         context.start();
         DemoService demoService = context.getBean("demoService", DemoService.class);
         CompletableFuture<String> hello = demoService.sayHelloAsync("world");

@@ -44,7 +44,7 @@ public class ReferenceConfigCache {
      * <p>
      * key example: <code>group1/org.apache.dubbo.foo.FooService:1.0.0</code>.
      */
-    public static final KeyGenerator DEFAULT_KEY_GENERATOR = referenceConfig -> {
+    public static final KeyGenerator DEFAULT_KEY_GENERATOR =    referenceConfig -> {
         String iName = referenceConfig.getInterface();
         if (StringUtils.isBlank(iName)) {
             Class<?> clazz = referenceConfig.getInterfaceClass();

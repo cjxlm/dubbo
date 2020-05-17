@@ -63,6 +63,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 
+
+    //代理对象  FactoryBean 由spring 中获取
     @Override
     public Object getObject() {
         return get();

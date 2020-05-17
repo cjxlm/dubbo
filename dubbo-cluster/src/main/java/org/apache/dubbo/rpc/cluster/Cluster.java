@@ -28,6 +28,14 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
  * <a href="http://en.wikipedia.org/wiki/Computer_cluster">Cluster</a>
  * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
  *
+ *Failover Cluster - 失败自动切换
+ * Failfast Cluster - 快速失败
+ * Failsafe Cluster - 失败安全
+ * Failback Cluster - 失败自动恢复
+ * Forking Cluster - 并行调用多个服务提供者
+ *
+ *
+ *
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {

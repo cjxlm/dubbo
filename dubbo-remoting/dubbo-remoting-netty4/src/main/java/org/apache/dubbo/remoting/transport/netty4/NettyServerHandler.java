@@ -92,6 +92,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         }
     }
 
+    // 接收消息
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
@@ -99,6 +100,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     }
 
 
+    //发送消息
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);

@@ -509,14 +509,17 @@ public class DubboBootstrap extends GenericEventListener {
 
         startMetadataReport();
 
+        //加载远程注册服务配制
         loadRemoteConfigs();
 
         checkGlobalConfigs();
-
+        //初始化
         initMetadataService();
 
+        //初始化导出元数据
         initMetadataServiceExporter();
 
+        //初始化监听器
         initEventListener();
 
         if (logger.isInfoEnabled()) {
@@ -692,24 +695,32 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * Start the bootstrap
+     *
+     * 启动服务
+     *
      */
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
+            //初始化信息
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
             }
-            // 1. export Dubbo Services
+            // 1. export Dubbo Services 导出服务
             exportServices();
 
             // Not only provider register
+            //是否有消费端注册
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
+                //导出元数据配制
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
+                //注册本地服务
                 registerServiceInstance();
             }
 
+            //导入服务
             referServices();
 
             if (logger.isInfoEnabled()) {
@@ -901,7 +912,9 @@ public class DubboBootstrap extends GenericEventListener {
             ReferenceConfig referenceConfig = (ReferenceConfig) rc;
             referenceConfig.setBootstrap(this);
 
+            //是否注册
             if (rc.shouldInit()) {
+                //异步导出 cache.get
                 if (referAsync) {
                     CompletableFuture<Object> future = ScheduledCompletableFuture.submit(
                             executorRepository.getServiceExporterExecutor(),
@@ -944,8 +957,9 @@ public class DubboBootstrap extends GenericEventListener {
 
         int port = exportedURL.getPort();
 
+        //创建要导出的服务
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
-
+        //多个注册中心轮流注册服务
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
 

@@ -35,6 +35,13 @@
             <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>org.apache.dubbo</groupId>-->
+            <!--<artifactId>dubbo-container-spring</artifactId>-->
+        <!--</dependency>-->
+
+
     </dependencies>
     <build>
         <plugins>

@@ -42,6 +42,12 @@ import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
  * DefaultMessageClient
+ *
+ * 网络通信客户端
+ *
+ * 封装了一些关于心跳检测的逻辑
+ *
+ * HeaderExchangeClient 中很多方法只有一行代码，即调用 HeaderExchangeChannel 对象的同签名方法
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
@@ -56,9 +62,15 @@ public class HeaderExchangeClient implements ExchangeClient {
     public HeaderExchangeClient(Client client, boolean startTimer) {
         Assert.notNull(client, "Client can't be null");
         this.client = client;
+
+        // 创建 HeaderExchangeChannel 对象
         this.channel = new HeaderExchangeChannel(client);
 
+
+        // 开启心跳检测定时器
         if (startTimer) {
+
+            // 以下代码均与心跳检测逻辑有关
             URL url = client.getUrl();
             startReconnectTask(url);
             startHeartBeatTask(url);
@@ -67,6 +79,8 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     @Override
     public CompletableFuture<Object> request(Object request) throws RemotingException {
+
+        // 直接 HeaderExchangeChannel 对象的同签名方法
         return channel.request(request);
     }
 
@@ -82,6 +96,8 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     @Override
     public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
+
+        // 直接 HeaderExchangeChannel 对象的同签名方法
         return channel.request(request, timeout);
     }
 
@@ -207,6 +223,8 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void doClose() {
+
+        // 停止心跳检测定时器
         if (heartBeatTimerTask != null) {
             heartBeatTimerTask.cancel();
         }

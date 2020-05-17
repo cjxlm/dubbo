@@ -32,7 +32,7 @@ public class ExtensionTest {
             Assertions.assertTrue(factory instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
             Assertions.assertTrue(factory instanceof MyExtensionFactory);
 
-            ExtensionFactory spring = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("spring");
+            ExtensionFactory spring = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("META-INF/spring");
             Assertions.assertTrue(spring instanceof ExtensionFactory);
             Assertions.assertFalse(spring instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
         } catch (IllegalArgumentException expected) {

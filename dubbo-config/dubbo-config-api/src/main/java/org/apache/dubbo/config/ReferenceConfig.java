@@ -143,6 +143,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         super(reference);
     }
 
+    //get bean 时调用
     public synchronized T get() {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
@@ -179,6 +180,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (bootstrap == null) {
+            //启动dubbo 远程连接
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.init();
         }
@@ -263,6 +265,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 null,
                 serviceMetadata);
 
+        //创建远程代理 并且订阅服务
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);
@@ -272,11 +275,25 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         initialized = true;
 
         // dispatch a ReferenceConfigInitializedEvent since 2.7.4
+        //分发事件
         dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
+
+    /**
+     * 首先根据配置检查是否为本地调用，若是，则调用 InjvmProtocol 的 refer 方法生成
+     * InjvmInvoker 实例。若不是，则读取直连配置项，或注册中心 url，并将读取到的 url
+     * 存储到 urls 中。然后根据 urls 元素数量进行后续操作。若 urls 元素数量为1，
+     * 则直接通过 Protocol 自适应拓展类构建 Invoker 实例接口。若 urls 元素数量大于1，
+     * 即存在多个注册中心或服务直连 url，此时先根据 url 构建 Invoker。然后再通过 Cluster
+     * 合并多个 Invoker，最后调用 ProxyFactory 生成代理类
+     * @param map
+     * @return
+     */
+
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
+        //从本地获取
         if (shouldJvmRefer(map)) {
             URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
@@ -296,14 +313,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         if (UrlUtils.isRegistry(url)) {
                             urls.add(url.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
                         } else {
+                            //集群合并 url
                             urls.add(ClusterUtils.mergeUrl(url, map));
                         }
                     }
                 }
             } else { // assemble URL from register center's configuration
                 // if protocols not injvm checkRegistry
+                // 检测 url 协议是否为 registry，若是，表明用户想使用指定的注册中心
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     checkRegistry();
+                    // 加载注册中心 url
                     List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
                     if (CollectionUtils.isNotEmpty(us)) {
                         for (URL u : us) {
@@ -320,8 +340,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
             }
 
+            // 单个注册中心或服务提供者(服务直连，下同)
             if (urls.size() == 1) {
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
+
+                // 多个注册中心或多个服务提供者，或者两者混合
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
@@ -331,10 +354,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         registryURL = url; // use last registry url
                     }
                 }
+                //合并从集群中获取，合并成一个
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
+                    // 如果注册中心链接不为空，则将使用 AvailableCluster
                     URL u = registryURL.addParameterIfAbsent(CLUSTER_KEY, ZoneAwareCluster.NAME);
                     // The invoker wrap relation would be like: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
+
+                    // 创建 StaticDirectory 实例，并由 Cluster 对多个 Invoker 进行合并
                     invoker = CLUSTER.join(new StaticDirectory(u, invokers));
                 } else { // not a registry url, must be direct invoke.
                     invoker = CLUSTER.join(new StaticDirectory(invokers));
@@ -342,6 +369,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
 
+        // invoker 可用性检查
         if (shouldCheck() && !invoker.isAvailable()) {
             throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
@@ -368,6 +396,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             metadataService.publishServiceDefinition(consumerURL);
         }
         // create service proxy
+        //创建代理
         return (T) PROXY_FACTORY.getProxy(invoker);
     }
 

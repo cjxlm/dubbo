@@ -77,12 +77,14 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         }
     }
 
+    //入栈收到信息
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         handler.received(channel, msg);
     }
 
+    //出栈 发送信息
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);

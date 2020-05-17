@@ -87,6 +87,12 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 /**
  * RegistryDirectory
+ *
+ * 动态服务目录，可感知注册中心配置的变化，它所持有的 Invoker 列表会随
+ * 着注册中心内容的变化而变化。每次变化后，RegistryDirectory 会动态增删
+ * Invoker，并调用 Router 的 route 方法进行路由，过滤掉不符合路由规则的 Invoke
+ *
+ *
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 

@@ -46,6 +46,13 @@ import org.w3c.dom.Element;
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
+ *
+ * spring扫描出来并加载
+ *
+ * 入口 spring.schemas
+ *      spring.handlers
+ *
+ *
  * DubboNamespaceHandler
  *
  * @export
@@ -56,6 +63,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
         Version.checkDuplicate(DubboNamespaceHandler.class);
     }
 
+    //初始化解析 配制对应的bean
     @Override
     public void init() {
         registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
@@ -85,14 +93,19 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
         BeanDefinitionRegistry registry = parserContext.getRegistry();
+        //注册注解
         registerAnnotationConfigProcessors(registry);
+        //注册监听器
         registerApplicationListeners(registry);
+        //解析配制文件
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);
         return beanDefinition;
     }
 
     /**
+     * 注册自己的bean
+     *
      * Register {@link ApplicationListener ApplicationListeners} as a Spring Bean
      *
      * @param registry {@link BeanDefinitionRegistry}

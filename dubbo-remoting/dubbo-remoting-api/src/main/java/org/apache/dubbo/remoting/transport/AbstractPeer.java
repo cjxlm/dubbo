@@ -25,6 +25,10 @@ import org.apache.dubbo.remoting.RemotingException;
 
 /**
  * AbstractPeer
+ *
+ * 不同的网络通信框架
+ *
+ *
  */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
@@ -48,8 +52,11 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         this.handler = handler;
     }
 
+    //决定用哪个框架发送消息
     @Override
     public void send(Object message) throws RemotingException {
+
+        // 该方法由 AbstractClient 类实现
         send(message, url.getParameter(Constants.SENT_KEY, false));
     }
 

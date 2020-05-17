@@ -544,6 +544,7 @@ class URL implements Serializable {
         return methodParameters;
     }
 
+    // 获取路由规则
     public String getParameterAndDecoded(String key) {
         return getParameterAndDecoded(key, null);
     }
